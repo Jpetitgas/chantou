@@ -1,0 +1,777 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model activite {
+  id                     Int                 @id @default(autoincrement())
+  section_id             Int
+  saison_id              Int
+  categorie_id           Int?
+  nom                    String              @db.VarChar(255)
+  sous_condition         Boolean
+  certificat_obligatoire Boolean
+  tarif                  Int
+  nb_de_place            Int
+  cotisation             Int?
+  duree                  String              @db.VarChar(255)
+  categorie_activite     categorie_activite? @relation(fields: [categorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B8755515BCF5E72D")
+  section                section             @relation(fields: [section_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B8755515D823E37A")
+  saison                 saison              @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B8755515F965414C")
+  cours                  cours[]
+  inscription            inscription[]
+
+  @@index([categorie_id], map: "IDX_B8755515BCF5E72D")
+  @@index([section_id], map: "IDX_B8755515D823E37A")
+  @@index([saison_id], map: "IDX_B8755515F965414C")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model article {
+  id               Int              @id @default(autoincrement())
+  categorie_id     Int
+  menu_id          Int?
+  titre            String           @db.VarChar(255)
+  slug             String           @db.VarChar(255)
+  created_at       DateTime         @db.DateTime(0)
+  contenu          String           @db.LongText
+  updated_at       DateTime         @db.DateTime(0)
+  file             String           @db.VarChar(255)
+  en_ligne         Boolean
+  category_article category_article @relation(fields: [categorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_23A0E66BCF5E72D")
+  menu             menu?            @relation(fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_23A0E66CCD7E912")
+
+  @@index([categorie_id], map: "IDX_23A0E66BCF5E72D")
+  @@index([menu_id], map: "IDX_23A0E66CCD7E912")
+}
+
+model banque {
+  id                 Int                  @id @default(autoincrement())
+  nom                String               @db.VarChar(255)
+  verrouille         Boolean?
+  paiement           paiement[]
+  paiement_boutique  paiement_boutique[]
+  paiement_evenement paiement_evenement[]
+}
+
+model categorie_activite {
+  id          Int        @id @default(autoincrement())
+  designation String     @db.VarChar(255)
+  activite    activite[]
+}
+
+model categorie_section {
+  id        Int         @id @default(autoincrement())
+  nom       String      @db.VarChar(255)
+  evenement evenement[]
+  section   section[]
+}
+
+model category {
+  id      Int       @id @default(autoincrement())
+  name    String    @db.VarChar(255)
+  slug    String    @db.VarChar(255)
+  product product[]
+}
+
+model category_article {
+  id      Int       @id @default(autoincrement())
+  nom     String    @db.VarChar(255)
+  article article[]
+}
+
+model chat {
+  id            Int         @id @default(autoincrement())
+  expediteur_id Int
+  cours_id      Int
+  saison_id     Int?
+  message       String      @db.VarChar(255)
+  created_at    DateTime    @db.DateTime(0)
+  utilisateur   utilisateur @relation(fields: [expediteur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_659DF2AA10335F61")
+  cours         cours       @relation(fields: [cours_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_659DF2AA7ECF78B0")
+  saison        saison?     @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_659DF2AAF965414C")
+
+  @@index([expediteur_id], map: "IDX_659DF2AA10335F61")
+  @@index([cours_id], map: "IDX_659DF2AA7ECF78B0")
+  @@index([saison_id], map: "IDX_659DF2AAF965414C")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model consultation_chat {
+  id                Int         @id @default(autoincrement())
+  utilisateur_id    Int
+  cours_id          Int
+  date_consultation DateTime    @db.DateTime(0)
+  cours             cours       @relation(fields: [cours_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_4E5472607ECF78B0")
+  utilisateur       utilisateur @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_4E547260FB88E14F")
+
+  @@index([cours_id], map: "IDX_4E5472607ECF78B0")
+  @@index([utilisateur_id], map: "IDX_4E547260FB88E14F")
+}
+
+model contact_pratiquant {
+  id            Int        @id @default(autoincrement())
+  pratiquant_id Int
+  nom           String     @db.VarChar(255)
+  prenom        String     @db.VarChar(255)
+  email         String     @db.VarChar(255)
+  portable      String     @db.VarChar(255)
+  pratiquant    pratiquant @relation(fields: [pratiquant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5AE29E6FA5942E30")
+
+  @@index([pratiquant_id], map: "IDX_5AE29E6FA5942E30")
+}
+
+model container {
+  id           Int       @id @default(autoincrement())
+  evenement_id Int
+  nom          String    @db.VarChar(255)
+  x            Int?
+  y            Int?
+  angle        Int?
+  largeur      Int?
+  hauteur      Int?
+  nb_ligne     Int
+  z            Int?
+  price_place  Float?
+  evenement    evenement @relation(fields: [evenement_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_C7A2EC1BFD02F13")
+  place        place[]
+
+  @@index([evenement_id], map: "IDX_C7A2EC1BFD02F13")
+}
+
+model corp_facture {
+  id Int @id @default(autoincrement())
+}
+
+model cours {
+  id                Int                 @id @default(autoincrement())
+  activite_id       Int
+  intervenant_id    Int
+  saison_id         Int
+  nom               String              @db.VarChar(255)
+  chat              chat[]
+  consultation_chat consultation_chat[]
+  activite          activite            @relation(fields: [activite_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FDCA8C9C9B0F88B1")
+  utilisateur       utilisateur         @relation(fields: [intervenant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FDCA8C9CAB9A1716")
+  saison            saison              @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_FDCA8C9CF965414C")
+  inscription       inscription[]
+  presence          presence[]
+
+  @@index([activite_id], map: "IDX_FDCA8C9C9B0F88B1")
+  @@index([intervenant_id], map: "IDX_FDCA8C9CAB9A1716")
+  @@index([saison_id], map: "IDX_FDCA8C9CF965414C")
+}
+
+model cp {
+  id          Int           @id @default(autoincrement())
+  code        Int
+  utilisateur utilisateur[]
+  ville       ville[]
+}
+
+model doctrine_migration_versions {
+  version        String    @id
+  executed_at    DateTime? @db.DateTime(0)
+  execution_time Int?
+}
+
+model document {
+  id               Int               @id @default(autoincrement())
+  pratiquant_id    Int
+  type_id          Int?
+  nom              String            @db.VarChar(255)
+  date_certificat  DateTime?         @db.DateTime(0)
+  designation      String            @db.VarChar(255)
+  pratiquant       pratiquant        @relation(fields: [pratiquant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_D8698A76A5942E30")
+  type_de_document type_de_document? @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_D8698A76C54C8C93")
+  inscription      inscription[]
+
+  @@index([pratiquant_id], map: "IDX_D8698A76A5942E30")
+  @@index([type_id], map: "IDX_D8698A76C54C8C93")
+}
+
+model dossier {
+  id                 Int           @id @default(autoincrement())
+  saison_id          Int
+  adherent_id        Int
+  bulletin_valide    Boolean
+  bulletin_adhesion  String?       @db.VarChar(255)
+  dossier_verrouille Boolean
+  remarque           String?       @db.VarChar(255)
+  locked             Boolean
+  note_lock          String?       @db.VarChar(255)
+  utilisateur        utilisateur   @relation(fields: [adherent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_3D48E03725F06C53")
+  saison             saison        @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_3D48E037F965414C")
+  inscription        inscription[]
+  paiement           paiement[]
+  reduction          reduction[]
+
+  @@index([adherent_id], map: "IDX_3D48E03725F06C53")
+  @@index([saison_id], map: "IDX_3D48E037F965414C")
+}
+
+model evenement {
+  id                 Int                  @id @default(autoincrement())
+  saison_id          Int?
+  section_id         Int?
+  nom                String               @db.VarChar(255)
+  actif              Boolean
+  description        String               @db.LongText
+  image              String?              @db.VarChar(255)
+  image_b            String?              @db.VarChar(255)
+  updated_at         DateTime?            @db.DateTime(0)
+  localisation       String               @db.VarChar(255)
+  payant             Boolean
+  plan               Boolean
+  quota              Int
+  largeur            Int?
+  hauteur            Int?
+  description_billet String?              @db.LongText
+  container          container[]
+  categorie_section  categorie_section?   @relation(fields: [section_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B26681ED823E37A")
+  saison             saison?              @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B26681EF965414C")
+  option             option[]
+  paiement_evenement paiement_evenement[]
+
+  @@index([section_id], map: "IDX_B26681ED823E37A")
+  @@index([saison_id], map: "IDX_B26681EF965414C")
+}
+
+model information {
+  id                       Int      @id @default(autoincrement())
+  description_inscription  String?  @db.LongText
+  condition_de_vente       String?  @db.LongText
+  paiement                 String?  @db.LongText
+  entete_bulletin          String?  @db.LongText
+  nom_structure            String?  @db.VarChar(255)
+  signature                String?  @db.VarChar(255)
+  entete_facture           String?  @db.LongText
+  pied_facture             String?  @db.LongText
+  corps_facture            String?  @db.LongText
+  adresse                  String?  @db.VarChar(255)
+  code_postal              Int?
+  ville                    String?  @db.VarChar(255)
+  creation_dossier         Boolean?
+  modification_dossier     Boolean?
+  cours_visible            Boolean?
+  description_dossier      String?  @db.LongText
+  vitrine                  String   @db.VarChar(255)
+  espace                   String   @db.VarChar(255)
+  nb_sms                   Int?
+  stripe                   Boolean
+  boutique_presentation    String   @db.LongText
+  boutique_paiement        String   @db.LongText
+  boutique_livraison       String   @db.LongText
+  boutique_stripe          Boolean
+  boutique_active          Boolean
+  boutique_ouvert          Boolean
+  reservation_presentation String   @db.LongText
+  reservation_stripe       Boolean
+  reservation_active       Boolean
+  mensuration_pratiquant   Boolean?
+  site                     Boolean
+  lien_live                String?  @db.VarChar(255)
+  live                     Boolean
+  info_inscription         String?  @db.VarChar(255)
+}
+
+model inscription {
+  id                     Int        @id @default(autoincrement())
+  pratiquant_id          Int
+  activite_id            Int
+  dossier_id             Int
+  document_id            Int?
+  cours_id               Int?
+  certificat_obligatoire Boolean
+  certificat_valide      Boolean
+  statut                 String     @db.VarChar(255)
+  date_changement_statut DateTime   @db.DateTime(0)
+  remarque               String?    @db.VarChar(255)
+  transmis_assureur      Boolean
+  demande                String?    @db.VarChar(255)
+  demande_particuliere   String?    @db.VarChar(255)
+  canceled               Int        @default(0)
+  canceled_date          DateTime?  @db.Date
+  dossier                dossier    @relation(fields: [dossier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5E90F6D6611C0C56")
+  cours                  cours?     @relation(fields: [cours_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5E90F6D67ECF78B0")
+  activite               activite   @relation(fields: [activite_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5E90F6D69B0F88B1")
+  pratiquant             pratiquant @relation(fields: [pratiquant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5E90F6D6A5942E30")
+  document               document?  @relation(fields: [document_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5E90F6D6C33F7837")
+
+  @@index([dossier_id], map: "IDX_5E90F6D6611C0C56")
+  @@index([cours_id], map: "IDX_5E90F6D67ECF78B0")
+  @@index([activite_id], map: "IDX_5E90F6D69B0F88B1")
+  @@index([pratiquant_id], map: "IDX_5E90F6D6A5942E30")
+  @@index([document_id], map: "IDX_5E90F6D6C33F7837")
+}
+
+model mensuration {
+  id                                                Int          @id @default(autoincrement())
+  taille                                            String       @db.VarChar(255)
+  pratiquant_pratiquant_taille_haut_idTomensuration pratiquant[] @relation("pratiquant_taille_haut_idTomensuration")
+  pratiquant_pratiquant_taille_bas_idTomensuration  pratiquant[] @relation("pratiquant_taille_bas_idTomensuration")
+}
+
+model menu {
+  id          Int       @id @default(autoincrement())
+  nom         String    @db.VarChar(255)
+  description String    @db.LongText
+  article     article[]
+}
+
+model messages {
+  id                                                Int         @id @default(autoincrement())
+  expediteur_id                                     Int
+  destinataire_id                                   Int
+  saison_id                                         Int?
+  titre                                             String      @db.VarChar(255)
+  message                                           String      @db.LongText
+  created_at                                        DateTime    @db.DateTime(0)
+  is_read                                           Boolean
+  marque                                            Boolean?
+  utilisateur_messages_expediteur_idToutilisateur   utilisateur @relation("messages_expediteur_idToutilisateur", fields: [expediteur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DB021E9610335F61")
+  utilisateur_messages_destinataire_idToutilisateur utilisateur @relation("messages_destinataire_idToutilisateur", fields: [destinataire_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DB021E96A4F84F6E")
+  saison                                            saison?     @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DB021E96F965414C")
+
+  @@index([expediteur_id], map: "IDX_DB021E9610335F61")
+  @@index([destinataire_id], map: "IDX_DB021E96A4F84F6E")
+  @@index([saison_id], map: "IDX_DB021E96F965414C")
+}
+
+model messenger_messages {
+  id           BigInt    @id @default(autoincrement())
+  body         String    @db.LongText
+  headers      String    @db.LongText
+  queue_name   String    @db.VarChar(190)
+  created_at   DateTime  @db.DateTime(0)
+  available_at DateTime  @db.DateTime(0)
+  delivered_at DateTime? @db.DateTime(0)
+
+  @@index([delivered_at], map: "IDX_75EA56E016BA31DB")
+  @@index([available_at], map: "IDX_75EA56E0E3BD61CE")
+  @@index([queue_name], map: "IDX_75EA56E0FB7336F0")
+}
+
+model niveau_tarifaire {
+  id                         Int                          @id @default(autoincrement())
+  nom                        String                       @db.VarChar(255)
+  operateur_niveau_tarifaire operateur_niveau_tarifaire[]
+  regle_tarifaire            regle_tarifaire[]
+}
+
+model operateur {
+  id                         Int                          @id @default(autoincrement())
+  nom                        String                       @db.VarChar(255)
+  operateur_niveau_tarifaire operateur_niveau_tarifaire[]
+  regle_tarifaire            regle_tarifaire[]
+}
+
+model operateur_niveau_tarifaire {
+  operateur_id        Int
+  niveau_tarifaire_id Int
+  operateur           operateur        @relation(fields: [operateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_C38F9F8E3F192FC")
+  niveau_tarifaire    niveau_tarifaire @relation(fields: [niveau_tarifaire_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_C38F9F8EB764949F")
+
+  @@id([operateur_id, niveau_tarifaire_id])
+  @@index([operateur_id], map: "IDX_C38F9F8E3F192FC")
+  @@index([niveau_tarifaire_id], map: "IDX_C38F9F8EB764949F")
+}
+
+model option {
+  id              Int               @id @default(autoincrement())
+  evenement_id    Int?
+  name            String            @db.VarChar(255)
+  price           Int
+  evenement       evenement?        @relation(fields: [evenement_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5A8600B0FD02F13")
+  option_purchase option_purchase[]
+
+  @@index([evenement_id], map: "IDX_5A8600B0FD02F13")
+}
+
+model option_purchase {
+  id                  Int          @id @default(autoincrement())
+  option_evenement_id Int?
+  utilisateur_id      Int?
+  delivery            Boolean
+  option              option?      @relation(fields: [option_evenement_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_4160A09FC3FA6CDF")
+  utilisateur         utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_4160A09FFB88E14F")
+
+  @@index([option_evenement_id], map: "IDX_4160A09FC3FA6CDF")
+  @@index([utilisateur_id], map: "IDX_4160A09FFB88E14F")
+}
+
+model paiement {
+  id                  Int              @id @default(autoincrement())
+  dossier_id          Int
+  type_de_paiement_id Int
+  banque_id           Int?
+  saison_id           Int
+  montant             Float
+  encaissement        String?          @db.VarChar(255)
+  remarque            String?          @db.VarChar(255)
+  reference           String?          @db.VarChar(255)
+  encaisse            Boolean
+  banque              banque?          @relation(fields: [banque_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B1DC7A1E37E080D9")
+  dossier             dossier          @relation(fields: [dossier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B1DC7A1E611C0C56")
+  type_de_paiement    type_de_paiement @relation(fields: [type_de_paiement_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B1DC7A1EEF109C5")
+  saison              saison           @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B1DC7A1EF965414C")
+
+  @@index([banque_id], map: "IDX_B1DC7A1E37E080D9")
+  @@index([dossier_id], map: "IDX_B1DC7A1E611C0C56")
+  @@index([type_de_paiement_id], map: "IDX_B1DC7A1EEF109C5")
+  @@index([saison_id], map: "IDX_B1DC7A1EF965414C")
+}
+
+model paiement_boutique {
+  id                  Int              @id @default(autoincrement())
+  type_de_paiement_id Int
+  banque_id           Int?
+  saison_id           Int
+  purchase_id         Int
+  montant             Float
+  encaissement        String?          @db.VarChar(255)
+  remarque            String?          @db.VarChar(255)
+  reference           String?          @db.VarChar(255)
+  encaisse            Boolean
+  banque              banque?          @relation(fields: [banque_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6B85C46E37E080D9")
+  purchase            purchase         @relation(fields: [purchase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6B85C46E558FBEB9")
+  type_de_paiement    type_de_paiement @relation(fields: [type_de_paiement_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6B85C46EEF109C5")
+  saison              saison           @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6B85C46EF965414C")
+
+  @@index([banque_id], map: "IDX_6B85C46E37E080D9")
+  @@index([purchase_id], map: "IDX_6B85C46E558FBEB9")
+  @@index([type_de_paiement_id], map: "IDX_6B85C46EEF109C5")
+  @@index([saison_id], map: "IDX_6B85C46EF965414C")
+}
+
+model paiement_evenement {
+  id                  Int              @id @default(autoincrement())
+  type_de_paiement_id Int
+  banque_id           Int?
+  saison_id           Int
+  evenement_id        Int?
+  utilisateur_id      Int
+  montant             Float
+  encaissement        String?          @db.VarChar(255)
+  remarque            String?          @db.VarChar(255)
+  reference           String?          @db.VarChar(255)
+  encaisse            Boolean
+  banque              banque?          @relation(fields: [banque_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CDE0165437E080D9")
+  type_de_paiement    type_de_paiement @relation(fields: [type_de_paiement_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CDE01654EF109C5")
+  saison              saison           @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CDE01654F965414C")
+  utilisateur         utilisateur      @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CDE01654FB88E14F")
+  evenement           evenement?       @relation(fields: [evenement_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CDE01654FD02F13")
+
+  @@index([banque_id], map: "IDX_CDE0165437E080D9")
+  @@index([type_de_paiement_id], map: "IDX_CDE01654EF109C5")
+  @@index([saison_id], map: "IDX_CDE01654F965414C")
+  @@index([utilisateur_id], map: "IDX_CDE01654FB88E14F")
+  @@index([evenement_id], map: "IDX_CDE01654FD02F13")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model place {
+  id             Int          @id @default(autoincrement())
+  container_id   Int
+  utilisateur_id Int?
+  nom            String       @db.VarChar(255)
+  verrouiller    Boolean
+  updated_at     DateTime?    @db.DateTime(0)
+  container      container    @relation(fields: [container_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_741D53CDBC21F742")
+  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_741D53CDFB88E14F")
+
+  @@index([container_id], map: "IDX_741D53CDBC21F742")
+  @@index([utilisateur_id], map: "IDX_741D53CDFB88E14F")
+}
+
+model pratiquant {
+  id                                                 Int                  @id @default(autoincrement())
+  utilisateur_id                                     Int
+  taille_haut_id                                     Int?
+  taille_bas_id                                      Int?
+  nom                                                String               @db.VarChar(255)
+  prenom                                             String               @db.VarChar(255)
+  naissance                                          DateTime             @db.DateTime(0)
+  sexe                                               String               @db.VarChar(1)
+  contact_pratiquant                                 contact_pratiquant[]
+  document                                           document[]
+  inscription                                        inscription[]
+  mensuration_pratiquant_taille_haut_idTomensuration mensuration?         @relation("pratiquant_taille_haut_idTomensuration", fields: [taille_haut_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_9D5BC7F8789F4F70")
+  mensuration_pratiquant_taille_bas_idTomensuration  mensuration?         @relation("pratiquant_taille_bas_idTomensuration", fields: [taille_bas_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_9D5BC7F8D0A99A79")
+  utilisateur                                        utilisateur          @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_9D5BC7F8FB88E14F")
+  presence                                           presence[]
+
+  @@index([taille_haut_id], map: "IDX_9D5BC7F8789F4F70")
+  @@index([taille_bas_id], map: "IDX_9D5BC7F8D0A99A79")
+  @@index([utilisateur_id], map: "IDX_9D5BC7F8FB88E14F")
+}
+
+model presence {
+  id            Int        @id @default(autoincrement())
+  pratiquant_id Int
+  cours_id      Int
+  saison_id     Int
+  create_at     DateTime   @db.DateTime(0)
+  cours         cours      @relation(fields: [cours_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6977C7A57ECF78B0")
+  pratiquant    pratiquant @relation(fields: [pratiquant_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6977C7A5A5942E30")
+  saison        saison     @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6977C7A5F965414C")
+
+  @@index([cours_id], map: "IDX_6977C7A57ECF78B0")
+  @@index([pratiquant_id], map: "IDX_6977C7A5A5942E30")
+  @@index([saison_id], map: "IDX_6977C7A5F965414C")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model product {
+  id                Int       @id @default(autoincrement())
+  category_id       Int?
+  name              String    @db.VarChar(255)
+  slug              String    @db.VarChar(255)
+  created_at        DateTime  @db.DateTime(0)
+  image             String    @db.VarChar(255)
+  updated_at        DateTime  @db.DateTime(0)
+  short_description String    @db.LongText
+  actif             Boolean
+  en_avant          Boolean
+  category          category? @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_D34A04AD12469DE2")
+  taille            taille[]
+
+  @@index([category_id], map: "IDX_D34A04AD12469DE2")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model purchase {
+  id                Int                 @id @default(autoincrement())
+  utilisateur_id    Int?
+  saison_id         Int?
+  total             Float
+  status            String              @db.VarChar(255)
+  purchase_at       DateTime            @db.DateTime(0)
+  paiement_boutique paiement_boutique[]
+  saison            saison?             @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6117D13BF965414C")
+  utilisateur       utilisateur?        @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6117D13BFB88E14F")
+  purchase_item     purchase_item[]
+
+  @@index([saison_id], map: "IDX_6117D13BF965414C")
+  @@index([utilisateur_id], map: "IDX_6117D13BFB88E14F")
+}
+
+model purchase_item {
+  id            Int      @id @default(autoincrement())
+  taille_id     Int?
+  purchase_id   Int
+  product_name  String   @db.VarChar(255)
+  product_price Float
+  quantity      Int
+  total         Float
+  livraison     Boolean?
+  purchase      purchase @relation(fields: [purchase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6FA8ED7D558FBEB9")
+  taille        taille?  @relation(fields: [taille_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6FA8ED7DFF25611A")
+
+  @@index([purchase_id], map: "IDX_6FA8ED7D558FBEB9")
+  @@index([taille_id], map: "IDX_6FA8ED7DFF25611A")
+}
+
+model reduction {
+  id          Int     @id @default(autoincrement())
+  dossier_id  Int
+  description String  @db.VarChar(255)
+  montant     Decimal @db.Decimal(9, 2)
+  dossier     dossier @relation(fields: [dossier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_B1E75468611C0C56")
+
+  @@index([dossier_id], map: "IDX_B1E75468611C0C56")
+}
+
+model regle_tarifaire {
+  id                    Int                     @id @default(autoincrement())
+  niveau_id             Int
+  operateur_id          Int
+  saison_id             Int
+  montant               Int
+  nom                   String                  @db.VarChar(255)
+  parametre             Int?
+  operateur             operateur               @relation(fields: [operateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_510E52453F192FC")
+  niveau_tarifaire      niveau_tarifaire        @relation(fields: [niveau_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_510E5245B3E9C81")
+  saison                saison                  @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_510E5245F965414C")
+  regle_tarifaire_ville regle_tarifaire_ville[]
+
+  @@index([operateur_id], map: "IDX_510E52453F192FC")
+  @@index([niveau_id], map: "IDX_510E5245B3E9C81")
+  @@index([saison_id], map: "IDX_510E5245F965414C")
+}
+
+model regle_tarifaire_ville {
+  regle_tarifaire_id Int
+  ville_id           Int
+  regle_tarifaire    regle_tarifaire @relation(fields: [regle_tarifaire_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_591C019F7F25989B")
+  ville              ville           @relation(fields: [ville_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_591C019FA73F0036")
+
+  @@id([regle_tarifaire_id, ville_id])
+  @@index([regle_tarifaire_id], map: "IDX_591C019F7F25989B")
+  @@index([ville_id], map: "IDX_591C019FA73F0036")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model reset_password_request {
+  id           Int         @id @default(autoincrement())
+  user_id      Int
+  selector     String      @db.VarChar(20)
+  hashed_token String      @db.VarChar(100)
+  requested_at DateTime    @db.DateTime(0)
+  expires_at   DateTime    @db.DateTime(0)
+  utilisateur  utilisateur @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_7CE748AA76ED395")
+
+  @@index([user_id], map: "IDX_7CE748AA76ED395")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model saison {
+  id                 Int                  @id @default(autoincrement())
+  saison             String               @db.VarChar(255)
+  debut              DateTime             @db.Date
+  fin                DateTime             @db.Date
+  activite           activite[]
+  chat               chat[]
+  cours              cours[]
+  dossier            dossier[]
+  evenement          evenement[]
+  messages           messages[]
+  paiement           paiement[]
+  paiement_boutique  paiement_boutique[]
+  paiement_evenement paiement_evenement[]
+  presence           presence[]
+  purchase           purchase[]
+  regle_tarifaire    regle_tarifaire[]
+  utilisateur        utilisateur[]
+}
+
+model section {
+  id                   Int               @id @default(autoincrement())
+  categorie_section_id Int
+  libelle              String            @db.VarChar(255)
+  ref_assureur         String            @db.VarChar(255)
+  activite             activite[]
+  categorie_section    categorie_section @relation(fields: [categorie_section_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_2D737AEF46EA29D6")
+
+  @@index([categorie_section_id], map: "IDX_2D737AEF46EA29D6")
+}
+
+model site {
+  id          Int    @id @default(autoincrement())
+  slogan      String @db.VarChar(255)
+  description String @db.LongText
+  file        String @db.VarChar(255)
+}
+
+model sujet {
+  id              Int         @id @default(autoincrement())
+  destinataire_id Int
+  sujet           String      @db.VarChar(255)
+  categorie       String      @db.VarChar(255)
+  verrouille      Boolean?
+  utilisateur     utilisateur @relation(fields: [destinataire_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_2E13599DA4F84F6E")
+
+  @@index([destinataire_id], map: "IDX_2E13599DA4F84F6E")
+}
+
+model taille {
+  id            Int             @id @default(autoincrement())
+  product_id    Int?
+  name          String          @db.VarChar(255)
+  price         Float
+  purchase_item purchase_item[]
+  product       product?        @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_76508B384584665A")
+
+  @@index([product_id], map: "IDX_76508B384584665A")
+}
+
+model todolist {
+  id             Int         @id @default(autoincrement())
+  utilisateur_id Int
+  tache          String      @db.VarChar(255)
+  done           Boolean?
+  utilisateur    utilisateur @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DD4DF6DBFB88E14F")
+
+  @@index([utilisateur_id], map: "IDX_DD4DF6DBFB88E14F")
+}
+
+model type_de_document {
+  id         Int        @id @default(autoincrement())
+  type       String     @db.VarChar(255)
+  verrouille Boolean?
+  document   document[]
+}
+
+model type_de_paiement {
+  id                 Int                  @id @default(autoincrement())
+  designation        String               @db.VarChar(255)
+  verrouille         Boolean?
+  paiement           paiement[]
+  paiement_boutique  paiement_boutique[]
+  paiement_evenement paiement_evenement[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model utilisateur {
+  id                                             Int                      @id @default(autoincrement())
+  cp_id                                          Int?
+  town_id                                        Int?
+  saison_id                                      Int?
+  email                                          String                   @unique(map: "UNIQ_1D1C63B3E7927C74") @db.VarChar(180)
+  roles                                          Json
+  password                                       String                   @db.VarChar(255)
+  adresse                                        String                   @db.LongText
+  portable                                       String                   @db.VarChar(255)
+  nom                                            String                   @db.VarChar(255)
+  prenom                                         String                   @db.VarChar(255)
+  is_verified                                    Boolean
+  registered_at                                  DateTime                 @db.DateTime(0)
+  account_must_be_verified_before                DateTime                 @db.DateTime(0)
+  registration_token                             String?                  @db.VarChar(255)
+  account_verified_at                            DateTime?                @db.DateTime(0)
+  forgot_password_token                          String?                  @db.VarChar(255)
+  forgot_password_token_requested_at             DateTime?                @db.DateTime(0)
+  forgot_password_token_must_be_verified_before  DateTime?                @db.DateTime(0)
+  forgot_password_token_verified_at              DateTime?                @db.DateTime(0)
+  remarque                                       String?                  @db.VarChar(255)
+  derniere_connexion                             DateTime?                @db.DateTime(0)
+  avant_derniere_connexion                       DateTime?                @db.DateTime(0)
+  quota_sms                                      Int?
+  chat                                           chat[]
+  consultation_chat                              consultation_chat[]
+  cours                                          cours[]
+  dossier                                        dossier[]
+  messages_messages_expediteur_idToutilisateur   messages[]               @relation("messages_expediteur_idToutilisateur")
+  messages_messages_destinataire_idToutilisateur messages[]               @relation("messages_destinataire_idToutilisateur")
+  option_purchase                                option_purchase[]
+  paiement_evenement                             paiement_evenement[]
+  place                                          place[]
+  pratiquant                                     pratiquant[]
+  purchase                                       purchase[]
+  reset_password_request                         reset_password_request[]
+  sujet                                          sujet[]
+  todolist                                       todolist[]
+  ville                                          ville?                   @relation(fields: [town_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_1D1C63B375E23604")
+  cp                                             cp?                      @relation(fields: [cp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_1D1C63B3EA8F463E")
+  saison                                         saison?                  @relation(fields: [saison_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_1D1C63B3F965414C")
+
+  @@index([town_id], map: "IDX_1D1C63B375E23604")
+  @@index([cp_id], map: "IDX_1D1C63B3EA8F463E")
+  @@index([saison_id], map: "IDX_1D1C63B3F965414C")
+}
+
+model ville {
+  id                    Int                     @id @default(autoincrement())
+  cp_id                 Int
+  nom_maj               String                  @db.VarChar(255)
+  nom_min               String                  @db.VarChar(255)
+  regle_tarifaire_ville regle_tarifaire_ville[]
+  utilisateur           utilisateur[]
+  cp                    cp                      @relation(fields: [cp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_43C3D9C3EA8F463E")
+
+  @@index([cp_id], map: "IDX_43C3D9C3EA8F463E")
+}

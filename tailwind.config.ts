@@ -16,15 +16,16 @@ const config: Config = {
         mdl: "960px",
         lg: "960px",
         lgl: "1024px",
-        xl:"1280px",
+        xl: "1280px",
       },
       colors: {
-        chantou_color_1: "#EFEFF5",
-        chantou_color_2: "#e21a7a",
+        chantou_color_1: "#a9a9a9",
+        chantou_color_2: "#d3d3d3",
+        chantou_color_5: "#e21a7a",
         text_1: "#032075",
-       
+
       },
-      
+
     },
   },
   plugins: [],

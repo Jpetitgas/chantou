@@ -1,6 +1,10 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Josefin_Sans } from 'next/font/google'
+import { BottomHeader } from "@/src/components/BottomHeader";
+import { Footer } from "@/src/components/Footer";
+import { Header } from "@/src/components/Header";
+
 
 
 // const inter = Inter({ subsets: ['latin'] })
@@ -18,7 +22,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={`${josephin.className} antialiased`}>{children}</body>
+      <body className={`${josephin.className} antialiased`}>
+        <Header />
+        <BottomHeader />
+        <div className='bg-gray-300'>
+          {children}
+        </div>
+        
+        <Footer />
+      </body>
     </html>
   )
 }
